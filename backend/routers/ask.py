@@ -16,7 +16,16 @@ def ask_question(req: AskRequest):
     if not chunks:
         raise HTTPException(status_code=404, detail="No relevant content found. Check document_id.")
 
-    state = run_agent("qa", chunks, question=req.question)
+    try:
+        state = run_agent("qa", chunks, question=req.question)
+    except Exception as exc:
+        message = str(exc).lower()
+        if "quota" in message or "rate" in message or "429" in message:
+            raise HTTPException(
+                status_code=503,
+                detail="AI provider quota or rate limit was exceeded. Please try again later or use a Gemini project with available quota.",
+            )
+        raise HTTPException(status_code=500, detail=f"Question answering failed: {exc}")
 
     return AskResponse(
         answer=state["result"],
