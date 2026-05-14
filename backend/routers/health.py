@@ -10,7 +10,7 @@ router = APIRouter(prefix="/health", tags=["Health"])
 def ping_gemini() -> str:
     try:
         llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash",
+            model=settings.llm_model,
             google_api_key=settings.google_api_key,
         )
         llm.invoke("ping")

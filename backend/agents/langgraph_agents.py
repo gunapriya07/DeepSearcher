@@ -15,13 +15,18 @@ from langgraph.graph import StateGraph, END
 from langchain_google_genai import ChatGoogleGenerativeAI
 from core.config import settings
 
-# ---------- Shared LLM ----------
 
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    google_api_key=settings.google_api_key,
-    temperature=0.3,
-)
+def get_llm():
+    """Instantiate the Google Generative AI LLM using configured model.
+
+    We create per-call instances so the model can be changed via `.env`
+    without editing source files.
+    """
+    return ChatGoogleGenerativeAI(
+        model=settings.llm_model,
+        google_api_key=settings.google_api_key,
+        temperature=0.3,
+    )
 
 
 # ---------- Agent State ----------
@@ -51,7 +56,7 @@ Question: {state["question"]}
 
 Provide a clear, accurate answer with references to specific parts of the context."""
 
-    response = llm.invoke(prompt)
+    response = get_llm().invoke(prompt)
     state["result"] = response.content
     state["citations"] = state["context_chunks"][:3]   # top 3 chunks as citations
     return state
@@ -74,7 +79,7 @@ def summarizer_agent(state: AgentState) -> AgentState:
 Document content:
 {context}"""
 
-    response = llm.invoke(prompt)
+    response = get_llm().invoke(prompt)
     state["result"] = response.content
     return state
 
@@ -97,7 +102,7 @@ Format your response as valid JSON (no markdown fences) with this exact structur
 Document:
 {context}"""
 
-    response = llm.invoke(prompt)
+    response = get_llm().invoke(prompt)
     import json, re
     raw = response.content.strip()
     # Strip markdown fences if present
@@ -119,7 +124,7 @@ def explainer_agent(state: AgentState) -> AgentState:
 Document:
 {context}"""
 
-    response = llm.invoke(prompt)
+    response = get_llm().invoke(prompt)
     state["result"] = response.content
     return state
 
@@ -132,7 +137,7 @@ def research_agent(state: AgentState) -> AgentState:
 Document:
 {context}"""
 
-    response = llm.invoke(prompt)
+    response = get_llm().invoke(prompt)
     state["result"] = response.content
     return state
 
@@ -158,7 +163,7 @@ Return only a JSON array of short topic strings (no markdown, no preamble):
 Document:
 {context}"""
 
-    response = llm.invoke(prompt)
+    response = get_llm().invoke(prompt)
     import json, re
     raw = re.sub(r"```json|```", "", response.content).strip()
     try:
