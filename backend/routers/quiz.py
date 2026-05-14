@@ -42,7 +42,17 @@ def generate_quiz(req: QuizRequest):
     if not chunks:
         raise HTTPException(status_code=404, detail="Document not found.")
 
-    state = run_agent("quiz", chunks, num_questions=num_q)
+    try:
+        state = run_agent("quiz", chunks, num_questions=num_q)
+    except Exception as exc:
+        message = str(exc).lower()
+        if "quota" in message or "rate" in message or "429" in message:
+            raise HTTPException(
+                status_code=503,
+                detail="AI provider quota or rate limit was exceeded. Please try again later or use a Gemini project with available quota.",
+            )
+        raise HTTPException(status_code=500, detail=f"Quiz generation failed: {exc}")
+
     raw_questions = state.get("quiz_questions") or []
 
     questions = [
