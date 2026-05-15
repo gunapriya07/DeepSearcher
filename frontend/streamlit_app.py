@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# ─── Global CSS ───────────────────────────────────────────────────────────────
+
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap');
